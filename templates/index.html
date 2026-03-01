@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>MQTT Smart Room Monitor</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body { font-family: Arial; background: #f4f6f8; margin: 0; }
+        header { background: #1e293b; color: white; padding: 15px; text-align: center; }
+        .container { padding: 20px; }
+        .cards { display: flex; gap: 20px; }
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            flex: 1;
+            text-align: center;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .value { font-size: 32px; font-weight: bold; }
+        .alert { color: red; }
+        .chart-box { background: white; padding: 20px; margin-top: 30px; border-radius: 10px; }
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #1e40af;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+<header>
+    <h1>MQTT Smart Room Status Monitor</h1>
+    <p>Real-time IoT Dashboard</p>
+</header>
+
+<div class="container">
+
+<div class="cards">
+    <div class="card">
+        <h3>Temperature (°C)</h3>
+        <div id="temp" class="value">--</div>
+    </div>
+    <div class="card">
+        <h3>Humidity (%)</h3>
+        <div id="hum" class="value">--</div>
+    </div>
+</div>
+
+<button onclick="window.location.href='/download'">
+    Download Data as CSV
+</button>
+
+<div class="chart-box">
+    <canvas id="chart"></canvas>
+</div>
+
+</div>
+
+<script>
+const ctx = document.getElementById('chart').getContext('2d');
+
+const chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: [],
+        datasets: [
+            { label: 'Temperature', data: [], borderColor: 'red', fill: false },
+            { label: 'Humidity', data: [], borderColor: 'blue', fill: false }
+        ]
+    }
+});
+
+function fetchData() {
+    fetch('/data')
+        .then(res => res.json())
+        .then(data => {
+            const tempEl = document.getElementById("temp");
+            const humEl = document.getElementById("hum");
+
+            tempEl.innerText = data.temperature;
+            humEl.innerText = data.humidity;
+
+            if (data.temperature > 30) {
+                tempEl.classList.add("alert");
+            } else {
+                tempEl.classList.remove("alert");
+            }
+
+            const time = new Date().toLocaleTimeString();
+            chart.data.labels.push(time);
+            chart.data.datasets[0].data.push(data.temperature);
+            chart.data.datasets[1].data.push(data.humidity);
+
+            if (chart.data.labels.length > 10) {
+                chart.data.labels.shift();
+                chart.data.datasets[0].data.shift();
+                chart.data.datasets[1].data.shift();
+            }
+            chart.update();
+        });
+}
+
+setInterval(fetchData, 5000);
+</script>
+
+</body>
+</html>
