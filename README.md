@@ -89,13 +89,6 @@ This project aligns with the **Industry Oriented Course – Internet of Things**
 
 ---
 
-## 🔮 Future Enhancements
-- AI-based prediction models  
-- ESP32 hardware integration  
-- Mobile application support  
-- Alert notifications  
-
----
 
 ## 👨‍💻 Author
 **Nitesh N D**  
